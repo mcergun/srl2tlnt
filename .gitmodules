@@ -1,3 +1,6 @@
 [submodule "srllib"]
 	path = srllib
 	url = https://github.com/Marzac/rs232
+[submodule "serial"]
+	path = serial
+	url = https://github.com/yan9a/serial
