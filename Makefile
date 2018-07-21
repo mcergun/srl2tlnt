@@ -1,15 +1,11 @@
 CXX = g++
-CFLAGS = -I.
+CFLAGS = -I. -Isrllib
 LDFLAGS = 
 OBJDIR = obj
 BINDIR = bin
 
-all: makedirs main
-	$(CXX) -o $(BINDIR)/srl2tlnt $(LDFLAGS) $(OBJDIR)/main.o
-
-makedirs:
-	mkdir -p $(OBJDIR)
-	mkdir -p $(BINDIR)
+all: makedirs main srl
+	$(CXX) -o $(BINDIR)/srl2tlnt $(LDFLAGS) $(OBJDIR)/main.o $(OBJDIR)/rs232.o
 
 clean:
 	rm -rf $(OBJDIR)
@@ -17,3 +13,10 @@ clean:
 
 main:
 	$(CXX) -c -o $(OBJDIR)/main.o $(CFLAGS) main.cpp
+
+srl:
+	$(CXX) -c -o $(OBJDIR)/rs232.o $(CFLAGS) srllib/rs232-linux.c
+
+makedirs:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(BINDIR)

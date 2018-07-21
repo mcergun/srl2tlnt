@@ -1,0 +1,3 @@
+[submodule "srllib"]
+	path = srllib
+	url = https://github.com/Marzac/rs232
