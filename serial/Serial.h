@@ -70,6 +70,7 @@ public:
 	long Open(void);//return 0 if success
 	void Close();
 	char ReadChar(bool& success);//return read char if success
+	char ReadBuf(char *buf, int &count, bool& success);//re&turn read char if success
 	bool WriteChar(char ch);////return success flag
 	bool Write(char *data);//write null terminated string and return success flag
 	bool SetRTS(bool value);//return success flag
@@ -367,6 +368,52 @@ char Serial::ReadChar(bool& success)
 	return rxchar;
 }
 
+char Serial::ReadBuf(char *buf, int &count, bool& success)
+{
+	success = false;
+	if (!IsOpened()) {return 0;}
+
+	DWORD dwRead;
+	DWORD length=1;
+	BYTE* data = (BYTE*)(&rxchar);
+	//the creation of the overlapped read operation
+	if (!fWaitingOnRead) {
+		// Issue read operation.
+		if (!ReadFile(hComm, data, length, &dwRead, &osReader)) {
+			if (GetLastError() != ERROR_IO_PENDING) { /*Error*/}
+			else { fWaitingOnRead = TRUE; /*Waiting*/}
+		}
+		else {if(dwRead==length) success = true;}//success
+	}
+
+
+	//detection of the completion of an overlapped read operation
+	DWORD dwRes;
+	if (fWaitingOnRead) {
+		dwRes = WaitForSingleObject(osReader.hEvent, READ_TIMEOUT);
+		switch (dwRes)
+		{
+		// Read completed.
+		case WAIT_OBJECT_0:
+			if (!GetOverlappedResult(hComm, &osReader, &dwRead, FALSE)) {/*Error*/ }
+			else {
+				if (dwRead == length) success = true;
+				fWaitingOnRead = FALSE;// Reset flag so that another opertion can be issued.
+			}// Read completed successfully.
+			break;
+
+		case WAIT_TIMEOUT:
+			// Operation isn't complete yet.
+			break;
+
+		default:
+			// Error in the WaitForSingleObject;
+			break;
+		}
+	}
+	return rxchar;
+}
+
 bool Serial::SetRTS(bool value)
 {
 	bool r = false;
@@ -552,6 +599,16 @@ char Serial::ReadChar(bool& success)
 	if (!IsOpened()) {return 0;	}
 	success=read(fd, &rxchar, 1)==1;
 	return rxchar;
+}
+
+char Serial::ReadBuf(char *buf, int &count, bool& success)
+{
+	success = false;
+	if (!IsOpened()) {return 0;}
+	int readCount = read(fd, buf, count);
+	success = readCount > 0;
+	count = readCount;
+	return *buf;
 }
 
 bool Serial::Write(char *data)
