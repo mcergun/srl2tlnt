@@ -2,6 +2,8 @@
 #include <string>
 #include <serial/Serial.h>
 
+char buf[1024] = { 0 };
+
 int main(int argc, char **argv)
 {
 	const std::string deviceName = "/dev/pts/3";
@@ -16,18 +18,14 @@ int main(int argc, char **argv)
 	while (1)
 	{
 		bool readSuccessful = false;
-		// char readChar = srl.ReadChar(readSuccessful);
-		// if (readSuccessful)
-		// {
-		// 	std::cout << readChar;
-		// }
-		char buf[1024];
 		int readLen = sizeof(buf);
 		char readChar = srl.ReadBuf(buf, readLen, readSuccessful);
 		if (readSuccessful)
 		{
 			std::cout << buf;
 			std::cout.flush();
+			memset(buf, 0, readLen < sizeof(buf) ? readLen + 1 : sizeof(buf));
+			// memset(buf, 0, readLen);
 		}
 		delay(100);
 	}
