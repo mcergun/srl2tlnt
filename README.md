@@ -7,3 +7,9 @@ This program aims to act as a bridge between a telnet connection and a serial po
 ## Usage
 
 Placeholder for usage information.
+
+## WIP
+
+Logic diagram so far
+
+![asfasf](diagram.png)
