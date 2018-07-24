@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -std=c++11 -I. -Isrllib -Iserial -g -Wall
+CFLAGS = -std=c++11 -I. -Isrllib -Iserial -Itelnet -g -Wall
 LDFLAGS = -pthread
 OBJDIR = obj
 BINDIR = bin

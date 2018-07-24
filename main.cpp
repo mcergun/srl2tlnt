@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <serial/Serial.h>
+#include <telnet/TelnetProtocol.h>
 
 char buf[1024] = { 0 };
 
