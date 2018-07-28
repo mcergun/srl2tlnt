@@ -1,6 +1,8 @@
 #ifndef _TELNET_PROTOCOL_H_
 #define _TELNET_PROTOCOL_H_
 
+constexpr ssize_t BUFFER_SIZE = 1024;
+
 enum TelnetCommands
 {
 	TelnetCommand_SE = 240,
@@ -19,6 +21,37 @@ enum TelnetCommands
 	TelnetCommand_DO = 253,
 	TelnetCommand_DONT = 254,
 	TelnetCommand_IAC = 255,
+};
+
+struct TelnetBuffer
+{
+public:
+	ssize_t Size;
+	char Buffer[BUFFER_SIZE];
+};
+
+struct TelnetCommandBuffer : public TelnetBuffer
+{
+public:
+	TelnetCommands IAC()
+	{
+		return static_cast<TelnetCommands> (Buffer[0]);
+	}
+
+	TelnetCommands CMD()
+	{
+		return static_cast<TelnetCommands> (Buffer[1]);
+	}
+
+	char * OptionalBuffer()
+	{
+		return &(Buffer[2]);
+	}
+
+	ssize_t OptionalBufferSize()
+	{
+		return Size - 2;
+	}
 };
 
 #endif

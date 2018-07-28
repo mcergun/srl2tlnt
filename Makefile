@@ -4,14 +4,17 @@ LDFLAGS = -pthread
 OBJDIR = obj
 BINDIR = bin
 
-all: makedirs main
+all: makedirs main telnet
 	$(CXX) -o $(BINDIR)/srl2tlnt $(LDFLAGS) $(OBJDIR)/main.o
 
 clean:
 	rm -rf $(OBJDIR)
 	rm -rf $(BINDIR)
 
-main:
+telnet: telnet/TelnetManager.cpp
+	$(CXX) -c -o $(OBJDIR)/telnet.o $(CFLAGS) telnet/TelnetManager.cpp
+
+main: main.cpp
 	$(CXX) -c -o $(OBJDIR)/main.o $(CFLAGS) main.cpp
 
 makedirs:
