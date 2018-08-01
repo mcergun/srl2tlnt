@@ -5,6 +5,7 @@ constexpr ssize_t BUFFER_SIZE = 1024;
 
 enum TelnetCommands
 {
+	TlntCmd_RAW = -1,
 	TlntCmd_SE = 240,
 	TlntCmd_NOP = 241,
 	TlntCmd_DM = 242,
