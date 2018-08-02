@@ -71,12 +71,16 @@ int TelnetManager::Initialize()
 	return sd;
 }
 
-TelnetCommands TelnetManager::GetPacketCommand(TelnetBuffer packet)
+TelnetCommands TelnetManager::GetPacketCommand(TelnetBuffer &packet)
 {
 	TelnetCommands cmd = TlntCmd_RAW;
 	if (packet.Buffer[0] == TlntCmd_IAC)
 	{
-
+		if (packet.Buffer[1] >= TlntCmd_SE &&
+			packet.Buffer[1] <= TlntCmd_DONT)
+		{
+			cmd = static_cast<TelnetCommands>(packet.Buffer[1]);
+		}
 	}
 	
 	return cmd;

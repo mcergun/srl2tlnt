@@ -31,7 +31,9 @@ void serialLoop(Serial &srl)
 int main(int argc, char **argv)
 {
 	TelnetClient cli;
+	TelnetBuffer packet(1024);
 	cli.Initialize();
 	cli.Connect("127.0.0.1", 23);
+	cli.ReceivePacket(packet);
 	return 0;
 }

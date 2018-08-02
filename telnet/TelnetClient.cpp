@@ -20,6 +20,29 @@ int TelnetClient::Connect(std::string remoteAddress, unsigned short port)
                 ret = connect(sd, reinterpret_cast<sockaddr *>(&RemoteHost),
                         sizeof(RemoteHost));
         }
+        if (ret == 0)
+        {
+                Connected = true;
+        }
 
+        return ret;
+}
+
+int TelnetClient::ReceivePacket(TelnetBuffer &packet)
+{
+        int ret = -1;
+        if (Connected)
+        {
+                ret = recv(sd, packet.Buffer, packet.Size, 0);
+                if (ret >= 0)
+                {
+                        TelnetCommands cmd = GetPacketCommand(packet);
+                        if (cmd != TlntCmd_RAW)
+                        {
+                                TelnetBuffer packet2(packet.Buffer + 3, 3);
+                                cmd = GetPacketCommand(packet2);
+                        }
+                }
+        }
         return ret;
 }

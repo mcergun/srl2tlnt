@@ -5,6 +5,7 @@ constexpr ssize_t BUFFER_SIZE = 1024;
 
 enum TelnetCommands
 {
+	TlntCmd_Invalid = -2,
 	TlntCmd_RAW = -1,
 	TlntCmd_SE = 240,
 	TlntCmd_NOP = 241,
@@ -74,18 +75,34 @@ enum TelnetOptions
 struct TelnetBuffer
 {
 public:
-	char Buffer[BUFFER_SIZE] = {0};
-	ssize_t Size;
+	TelnetBuffer(ssize_t size) :
+		Size(size)
+	{
+		Buffer = new unsigned char[size];
+	}
+	TelnetBuffer(unsigned char *buf, ssize_t size) :
+		Buffer(buf), Size(size)
+	{
+	}
+
+	unsigned char *Buffer = nullptr;
+	ssize_t Size = 0;
 };
 
 struct TelnetNegotiationCmd : public TelnetBuffer
 {
-	TelnetNegotiationCmd(TelnetCommands cmd, TelnetOptions opt)
+	TelnetNegotiationCmd(TelnetCommands cmd, TelnetOptions opt) :
+		TelnetBuffer(3)
 	{
 		Buffer[0] = TlntCmd_IAC;
 		Buffer[1] = cmd;
 		Buffer[2] = opt;
-		Size = 3;
+	}
+
+	TelnetNegotiationCmd(unsigned char *buf) :
+		TelnetBuffer(buf, 3)
+	{
+		
 	}
 
 	void SetCommand(TelnetCommands cmd)

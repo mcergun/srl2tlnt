@@ -17,15 +17,16 @@ public:
 	int SendWont(TelnetOptions opt);
 	int SendDont(TelnetOptions opt);
 protected:
-	TelnetBuffer Packet;
+	virtual int Initialize();
+	TelnetCommands GetPacketCommand(TelnetBuffer &packet);
+
+	TelnetBuffer Packet = TelnetBuffer(1024);
 	sockaddr_in RemoteHost;
 	std::vector<TelnetOptions> SupportedOptions = std::vector<TelnetOptions>();
 	int sd = -1;
 	unsigned short Port = 4023;
 	bool Initialized = false;
-
-	virtual int Initialize();
-	TelnetCommands GetPacketCommand(TelnetBuffer packet);
+	bool Connected = false;
 };
 
 #endif

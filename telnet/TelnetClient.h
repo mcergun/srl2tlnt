@@ -9,6 +9,7 @@ class TelnetClient : public TelnetManager
 public:
         int Initialize();
         int Connect(std::string remoteAddress, unsigned short port);
+        int ReceivePacket(TelnetBuffer &packet);
 };
 
 #endif
