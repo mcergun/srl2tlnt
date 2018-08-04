@@ -10,12 +10,12 @@ int TelnetManager::SendPacket()
 	return SendPacket(Packet, RemoteHost);
 }
 
-int TelnetManager::SendPacket(TelnetBuffer &packet)
+int TelnetManager::SendPacket(TelnetPacket &packet)
 {
 	return SendPacket(packet, RemoteHost);
 }
 
-int TelnetManager::SendPacket(TelnetBuffer &packet, sockaddr_in &remote)
+int TelnetManager::SendPacket(TelnetPacket &packet, sockaddr_in &remote)
 {
 	int ret = -1;
 	if (Initialized)
@@ -27,28 +27,28 @@ int TelnetManager::SendPacket(TelnetBuffer &packet, sockaddr_in &remote)
 
 int TelnetManager::SendWill(TelnetOptions opt)
 {
-	TelnetNegotiationCmd neg(TlntCmd_WILL, opt);
+	TelnetCommandPacket neg(TlntCmd_WILL, opt);
 
 	return SendPacket(neg);
 }
 
 int TelnetManager::SendDo(TelnetOptions opt)
 {
-	TelnetNegotiationCmd neg(TlntCmd_DO, opt);
+	TelnetCommandPacket neg(TlntCmd_DO, opt);
 
 	return SendPacket(neg);
 }
 
 int TelnetManager::SendWont(TelnetOptions opt)
 {
-	TelnetNegotiationCmd neg(TlntCmd_WONT, opt);
+	TelnetCommandPacket neg(TlntCmd_WONT, opt);
 
 	return SendPacket(neg);
 }
 
 int TelnetManager::SendDont(TelnetOptions opt)
 {
-	TelnetNegotiationCmd neg(TlntCmd_DONT, opt);
+	TelnetCommandPacket neg(TlntCmd_DONT, opt);
 
 	return SendPacket(neg);
 }
@@ -71,7 +71,7 @@ int TelnetManager::Initialize()
 	return sd;
 }
 
-TelnetCommands TelnetManager::GetPacketCommand(TelnetBuffer &packet)
+TelnetCommands TelnetManager::GetPacketCommand(TelnetPacket &packet)
 {
 	TelnetCommands cmd = TlntCmd_RAW;
 	if (packet.Buffer[0] == TlntCmd_IAC)
@@ -84,4 +84,20 @@ TelnetCommands TelnetManager::GetPacketCommand(TelnetBuffer &packet)
 	}
 	
 	return cmd;
+}
+
+int TelnetManager::HandlePacket(TelnetPacket &packet)
+{
+	ssize_t idx = 0;
+	TelnetCommands cmd = TlntCmd_Invalid;
+	TelnetPacket pck(packet);
+	while (cmd != TlntCmd_RAW && idx < (packet.Size + 3))
+	{
+		cmd = GetPacketCommand(pck);
+		if (cmd != TlntCmd_RAW && cmd != TlntCmd_Invalid)
+		{
+			pck = TelnetPacket(pck.Buffer + 3, pck.Size - 3);
+		}
+	}
+	return 0;
 }

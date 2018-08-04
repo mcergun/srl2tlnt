@@ -28,7 +28,7 @@ int TelnetClient::Connect(std::string remoteAddress, unsigned short port)
         return ret;
 }
 
-int TelnetClient::ReceivePacket(TelnetBuffer &packet)
+int TelnetClient::ReceivePacket(TelnetPacket &packet)
 {
         int ret = -1;
         if (Connected)
@@ -36,12 +36,7 @@ int TelnetClient::ReceivePacket(TelnetBuffer &packet)
                 ret = recv(sd, packet.Buffer, packet.Size, 0);
                 if (ret >= 0)
                 {
-                        TelnetCommands cmd = GetPacketCommand(packet);
-                        if (cmd != TlntCmd_RAW)
-                        {
-                                TelnetBuffer packet2(packet.Buffer + 3, 3);
-                                cmd = GetPacketCommand(packet2);
-                        }
+                        HandlePacket(packet);
                 }
         }
         return ret;

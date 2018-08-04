@@ -72,15 +72,15 @@ enum TelnetOptions
 	TlntOpt_ExtendedOptionsList = 255,
 };
 
-struct TelnetBuffer
+struct TelnetPacket
 {
 public:
-	TelnetBuffer(ssize_t size) :
+	TelnetPacket(ssize_t size) :
 		Size(size)
 	{
 		Buffer = new unsigned char[size];
 	}
-	TelnetBuffer(unsigned char *buf, ssize_t size) :
+	TelnetPacket(unsigned char *buf, ssize_t size) :
 		Buffer(buf), Size(size)
 	{
 	}
@@ -89,20 +89,19 @@ public:
 	ssize_t Size = 0;
 };
 
-struct TelnetNegotiationCmd : public TelnetBuffer
+struct TelnetCommandPacket : public TelnetPacket
 {
-	TelnetNegotiationCmd(TelnetCommands cmd, TelnetOptions opt) :
-		TelnetBuffer(3)
+	TelnetCommandPacket(TelnetCommands cmd, TelnetOptions opt) :
+		TelnetPacket(3)
 	{
 		Buffer[0] = TlntCmd_IAC;
 		Buffer[1] = cmd;
 		Buffer[2] = opt;
 	}
 
-	TelnetNegotiationCmd(unsigned char *buf) :
-		TelnetBuffer(buf, 3)
+	TelnetCommandPacket(unsigned char *buf) :
+		TelnetPacket(buf, 3)
 	{
-		
 	}
 
 	void SetCommand(TelnetCommands cmd)
@@ -123,6 +122,14 @@ struct TelnetNegotiationCmd : public TelnetBuffer
 	TelnetOptions GetOption()
 	{
 		return static_cast<TelnetOptions>(Buffer[2]);
+	}
+};
+
+struct TelnetNegotiationPacket : public TelnetCommandPacket
+{
+	TelnetNegotiationPacket(TelnetOptions opt) :
+		TelnetCommandPacket(TlntCmd_IAC, opt)
+	{
 	}
 };
 
