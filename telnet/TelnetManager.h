@@ -33,7 +33,8 @@ protected:
 	bool Connected = false;
 
 private:
-	int HandleSubPacket(TelnetPacket &packet);
+	int HandleSubPacket(TelnetPacket &packetz);
+	int HandleSubPacket(TelnetCommandPacket &cmdPkt);
 };
 
 #endif

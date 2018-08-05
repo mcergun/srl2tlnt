@@ -74,13 +74,20 @@ int TelnetManager::Initialize()
 
 TelnetCommands TelnetManager::GetPacketCommand(TelnetPacket &packet)
 {
-	TelnetCommands cmd = TlntCmd_RAW;
-	if (packet.Buffer[0] == TlntCmd_IAC)
+	TelnetCommands cmd = TlntCmd_Invalid;
+	if (packet.Size > 0)
 	{
-		if (packet.Buffer[1] >= TlntCmd_SE &&
-			packet.Buffer[1] <= TlntCmd_DONT)
+		if (packet.Buffer[0] == TlntCmd_IAC)
 		{
-			cmd = static_cast<TelnetCommands>(packet.Buffer[1]);
+			if (packet.Buffer[1] >= TlntCmd_SE &&
+				packet.Buffer[1] <= TlntCmd_DONT)
+			{
+				cmd = static_cast<TelnetCommands>(packet.Buffer[1]);
+			}
+		}
+		else
+		{
+			cmd = TlntCmd_RAW;
 		}
 	}
 	
@@ -102,16 +109,40 @@ TelnetPacket TelnetManager::GetSubPacket(TelnetPacket &packet)
 
 int TelnetManager::HandlePacket(TelnetPacket &packet)
 {
-	ssize_t idx = 0;
-	TelnetPacket subPacket = GetSubPacket(packet);
-	while (subPacket.Size != packet.Size)
+	TelnetCommands cmd = TlntCmd_RAW;
+	do
 	{
-		HandleSubPacket(subPacket);
-		packet = TelnetPacket(packet.Buffer + subPacket.Size,
-			packet.Size - subPacket.Size);
-		subPacket = GetSubPacket(packet);
-	}
-	HandleSubPacket(packet);
+		cmd = GetPacketCommand(packet);
+		switch (cmd)
+		{
+		case TlntCmd_RAW:
+			HandleSubPacket(packet);
+			break;
+		case TlntCmd_SE:
+		case TlntCmd_NOP:
+		case TlntCmd_DM:
+		case TlntCmd_BRK:
+		case TlntCmd_IP:
+		case TlntCmd_AO:
+		case TlntCmd_AYT:
+		case TlntCmd_EC:
+		case TlntCmd_EL:
+		case TlntCmd_GA:
+		case TlntCmd_SB:
+		case TlntCmd_WILL:
+		case TlntCmd_WONT:
+		case TlntCmd_DO:
+		case TlntCmd_DONT:
+		{
+			TelnetCommandPacket subPkt(packet.Buffer);
+			HandleSubPacket(subPkt);
+			packet = TelnetPacket(packet.Buffer + 3, packet.Size - 3);
+			break;
+		}
+		default:
+			break;
+		}
+	} while (cmd != TlntCmd_RAW && cmd != TlntCmd_Invalid);
 	return 0;
 }
 
@@ -119,7 +150,29 @@ int TelnetManager::HandleSubPacket(TelnetPacket &packet)
 {
 	// TODO: replace these test codes with actual packet handling later
 	using namespace std;
-	cout << "Packet Cmd 0x" << hex << static_cast<int>(packet.Buffer[1]) <<
-		", Op 0x" << hex << static_cast<int>(packet.Buffer[2]) << endl;
+	cout << "Raw packet received" << endl;
+	cout << "Packet [ ";
+	for (ssize_t i = 0; i < packet.Size; ++i)
+	{
+		cout << hex << static_cast<int>(packet.Buffer[i]) << " ";
+	}
+	cout << "]" << endl;
+	return 0;
+}
+
+int TelnetManager::HandleSubPacket(TelnetCommandPacket &cmdPkt)
+{
+	// TODO: replace these test codes with actual packet handling later
+	using namespace std;
+	switch (cmdPkt.GetCommand())
+	{
+	case TlntCmd_DO:
+		cout << "Telnet DO1 requested ";
+		break;
+	default:
+		break;
+	}
+	cout << "Packet Cmd 0x" << hex << static_cast<int>(cmdPkt.GetCommand()) <<
+		", Op 0x" << hex << static_cast<int>(cmdPkt.GetOption()) << endl;
 	return 0;
 }
