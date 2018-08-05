@@ -36,6 +36,7 @@ int TelnetClient::ReceivePacket(TelnetPacket &packet)
                 ret = recv(sd, packet.Buffer, packet.Size, 0);
                 if (ret >= 0)
                 {
+                        packet.Size = ret;
                         HandlePacket(packet);
                 }
         }

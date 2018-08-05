@@ -1,4 +1,5 @@
 #include <TelnetManager.h>
+#include <iostream>
 
 void TelnetManager::AddOption(TelnetOptions opt)
 {
@@ -7,7 +8,7 @@ void TelnetManager::AddOption(TelnetOptions opt)
 
 int TelnetManager::SendPacket()
 {
-	return SendPacket(Packet, RemoteHost);
+	return SendPacket(SendPkt, RemoteHost);
 }
 
 int TelnetManager::SendPacket(TelnetPacket &packet)
@@ -86,18 +87,39 @@ TelnetCommands TelnetManager::GetPacketCommand(TelnetPacket &packet)
 	return cmd;
 }
 
+TelnetPacket TelnetManager::GetSubPacket(TelnetPacket &packet)
+{
+	TelnetCommands cmd = GetPacketCommand(packet);
+	if (cmd != TlntCmd_RAW)
+	{
+		return TelnetCommandPacket(packet.Buffer);
+	}
+	else
+	{
+		return packet;
+	}
+}
+
 int TelnetManager::HandlePacket(TelnetPacket &packet)
 {
 	ssize_t idx = 0;
-	TelnetCommands cmd = TlntCmd_Invalid;
-	TelnetPacket pck(packet);
-	while (cmd != TlntCmd_RAW && idx < (packet.Size + 3))
+	TelnetPacket subPacket = GetSubPacket(packet);
+	while (subPacket.Size != packet.Size)
 	{
-		cmd = GetPacketCommand(pck);
-		if (cmd != TlntCmd_RAW && cmd != TlntCmd_Invalid)
-		{
-			pck = TelnetPacket(pck.Buffer + 3, pck.Size - 3);
-		}
+		HandleSubPacket(subPacket);
+		packet = TelnetPacket(packet.Buffer + subPacket.Size,
+			packet.Size - subPacket.Size);
+		subPacket = GetSubPacket(packet);
 	}
+	HandleSubPacket(packet);
+	return 0;
+}
+
+int TelnetManager::HandleSubPacket(TelnetPacket &packet)
+{
+	// TODO: replace these test codes with actual packet handling later
+	using namespace std;
+	cout << "Packet Cmd 0x" << hex << static_cast<int>(packet.Buffer[1]) <<
+		", Op 0x" << hex << static_cast<int>(packet.Buffer[2]) << endl;
 	return 0;
 }
