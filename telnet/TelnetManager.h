@@ -22,6 +22,9 @@ protected:
 	TelnetCommands GetPacketCommand(TelnetPacket &packet);
 	TelnetPacket GetSubPacket(TelnetPacket &packet);
 	int HandlePacket(TelnetPacket &packet);
+	int HandleSubPacket(TelnetPacket &packetz);
+	int HandleSubPacket(TelnetCommandPacket &cmdPkt);
+	bool IsOptionSupported(TelnetOptions opt);
 
 	TelnetPacket SendPkt = TelnetPacket(1024);
 	TelnetPacket RecvPkt = TelnetPacket(1024);
@@ -31,10 +34,6 @@ protected:
 	unsigned short Port = 4023;
 	bool Initialized = false;
 	bool Connected = false;
-
-private:
-	int HandleSubPacket(TelnetPacket &packetz);
-	int HandleSubPacket(TelnetCommandPacket &cmdPkt);
 };
 
 #endif

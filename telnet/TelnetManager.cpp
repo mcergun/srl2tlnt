@@ -152,7 +152,7 @@ int TelnetManager::HandleSubPacket(TelnetPacket &packet)
 	using namespace std;
 	cout << "Raw packet received" << endl;
 	cout << "Packet [ ";
-	for (ssize_t i = 0; i < packet.Size; ++i)
+	for (size_t i = 0; i < packet.Size; ++i)
 	{
 		cout << hex << static_cast<int>(packet.Buffer[i]) << " ";
 	}
@@ -175,4 +175,14 @@ int TelnetManager::HandleSubPacket(TelnetCommandPacket &cmdPkt)
 	cout << "Packet Cmd 0x" << hex << static_cast<int>(cmdPkt.GetCommand()) <<
 		", Op 0x" << hex << static_cast<int>(cmdPkt.GetOption()) << endl;
 	return 0;
+}
+
+bool TelnetManager::IsOptionSupported(TelnetOptions opt)
+{
+	bool match = false;
+	for (size_t i = 0; i < SupportedOptions.size() && !match; ++i)
+	{
+		match = SupportedOptions[i] == opt;
+	}
+	return match;
 }

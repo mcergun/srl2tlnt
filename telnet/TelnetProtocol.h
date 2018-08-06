@@ -1,7 +1,7 @@
 #ifndef _TELNET_PROTOCOL_H_
 #define _TELNET_PROTOCOL_H_
 
-constexpr ssize_t BUFFER_SIZE = 1024;
+constexpr size_t BUFFER_SIZE = 1024;
 
 enum TelnetCommands
 {
@@ -75,18 +75,18 @@ enum TelnetOptions
 struct TelnetPacket
 {
 public:
-	TelnetPacket(ssize_t size) :
+	TelnetPacket(size_t size) :
 		Size(size)
 	{
 		Buffer = new unsigned char[size];
 	}
-	TelnetPacket(unsigned char *buf, ssize_t size) :
+	TelnetPacket(unsigned char *buf, size_t size) :
 		Buffer(buf), Size(size)
 	{
 	}
 
 	unsigned char *Buffer = nullptr;
-	ssize_t Size = 0;
+	size_t Size = 0;
 };
 
 struct TelnetCommandPacket : public TelnetPacket
