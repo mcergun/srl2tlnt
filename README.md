@@ -14,6 +14,9 @@ _There are a lot of serial to telnet converters also. But using them defeats the
 > My current plan is to get a cross platform serial library and employ it directly. \
 > For telnet, however, I would like to implement the platform by myself as there is a logic behind the curtains.
 
+> 21.08.2018 \
+> Captured message interaction from telnetd server and ubuntu telnet client. This will serve as a good benchmark.
+
 ## Telnet
 
 ### Protocol Overview
