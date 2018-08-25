@@ -2,6 +2,7 @@
 #define _TELNET_PROTOCOL_H_
 
 #include <cstdlib>
+#include <cstring>
 
 constexpr size_t BUFFER_SIZE = 1024;
 
@@ -72,6 +73,60 @@ enum TelnetOptions
 	TlntOpt_TN3270E = 40,
 	TlntOpt_XAUTH = 41,
 	TlntOpt_ExtendedOptionsList = 255,
+};
+
+struct TelnetPacket
+{
+        TelnetPacket(void *buf, size_t size) :
+                Buf(reinterpret_cast<unsigned char *>(buf)), Size(size)
+        {
+
+        }
+
+        TelnetPacket() :
+                Size(0), IsOwner(true)
+        {
+                Buf = new unsigned char[DEF_BUF_SIZE];
+                std::memset(Buf, 0, DEF_BUF_SIZE);
+        }
+
+        ~TelnetPacket()
+        {
+                if (IsOwner)
+                {
+                        delete[] Buf;
+                        IsOwner = false;
+                }
+                Size = 0;
+                Buf = nullptr;
+        }
+
+        size_t AppendPacket(TelnetPacket &packet)
+        {
+                std::memcpy(Buf + Size, packet.Buf, packet.Size);
+                Size += packet.Size;
+                return Size;
+        }
+
+        size_t AppendBuffer(void *buf, size_t size)
+        {
+                std::memcpy(Buf + Size, buf, size);
+                Size += size;
+                return Size;
+        }
+
+        size_t AppendCommand(TelnetCommands cmd, TelnetOptions op)
+        {
+                Buf[Size++] = static_cast<unsigned char>(TlntCmd_IAC);
+                Buf[Size++] = static_cast<unsigned char>(cmd);
+                Buf[Size++] = static_cast<unsigned char>(op);
+                return Size;
+        }
+
+        static constexpr size_t DEF_BUF_SIZE = 1024;
+        unsigned char *Buf = nullptr;
+        size_t Size = 0;
+        bool IsOwner = false;
 };
 
 // struct TelnetPacket
