@@ -4,19 +4,18 @@
 #include <iostream>
 
 #define GRN_START       "\n\033[1;32m"
-#define GRN_END         "\033[0m\n\n"
 #define RED_START       "\n\033[1;31m"
-#define RED_END         "\033[0m\n\n"
+#define FMT_END         "\033[0m\n\n"
 
 #define PRINT_EVAL_MSG(eval) \
 { \
         if ((eval)) \
         { \
-                std::cout << GRN_START "Assert \"" << #eval << "\" passed" GRN_END; \
+                printf(GRN_START "%s, %d: Assert \" %s \" passed" FMT_END, __FILE__, __LINE__, #eval); \
         } \
         else \
         { \
-                std::cout << RED_START "Assert \"" << #eval << "\" failed!" RED_END; \
+                printf(RED_START "%s, %d: Assert \" %s \" failed!" FMT_END, __FILE__, __LINE__, #eval); \
         } \
 }
 
