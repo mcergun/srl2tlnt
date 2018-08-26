@@ -30,6 +30,7 @@ enum TelnetCommands
 
 enum TelnetOptions
 {
+	TlntOpt_InvalidOption = -1,
 	TlntOpt_BinaryTransmission = 0,
 	TlntOpt_Echo = 1,
 	TlntOpt_Reconnection = 2,
@@ -74,6 +75,26 @@ enum TelnetOptions
 	TlntOpt_XAUTH = 41,
 	TlntOpt_ExtendedOptionsList = 255,
 };
+
+static TelnetCommands ToTelnetCommand(unsigned char val)
+{
+	TelnetCommands ret = TlntCmd_RAW;
+	if (val >= 240)
+	{
+		ret = static_cast<TelnetCommands>(val);
+	}
+	return ret;
+}
+
+static TelnetOptions ToTelnetOption(unsigned char val)
+{
+	TelnetOptions ret = TlntOpt_InvalidOption;
+	if (val < 40 || val == 255)
+	{
+		ret = static_cast<TelnetOptions>(val);
+	}
+	return ret;
+}
 
 struct TelnetPacket
 {
