@@ -41,24 +41,70 @@ void printBuffer(void *buf, size_t count)
         cout << endl;
 }
 
+// just return command count for now
+size_t ProcessBuffer(void *buf, size_t count)
+{
+        unsigned char *cbuf = reinterpret_cast<unsigned char *>(buf);
+        size_t cmdCount = 0;
+        bool isCommand = false;
+        for (size_t idx = 0; idx < count; idx++)
+        {
+                // iac iac      -> no cmd, keep searching for iac
+                // iac so       -> so cmd, keep searching for iac
+                // iac so end   -> so end cmd, length is 2, keep searching for iac
+                // iac sth cmd  -> length is 3, keep searching for iac
+                TelnetCommands cmd = ToTelnetCommand(cbuf[idx]);
+                if (isCommand)
+                {
+                        if (cmd == TlntCmd_IAC)
+                        {
+                                isCommand = false;
+                                cmdCount++;
+                                idx--;
+                        }
+                }
+                else
+                {
+                        if (cmd == TlntCmd_IAC)
+                        {
+                                // Might be a command
+                                if (ToTelnetCommand(cbuf[idx + 1]) != TlntCmd_IAC)
+                                        isCommand = true;
+                        }
+                }
+        }
+        cmdCount = cmdCount ? cmdCount : 1;
+        return cmdCount;
+}
+
 int main(int argc, char **argv)
 {
         int ret = 0;
         size_t packetSize = 0;
+        size_t cmdCount = 0;
         TelnetPacket packet;
         TelnetPacket packetS1(serv1st, sizeof(serv1st));
         packet.AppendPacket(packetS1);
         packetSize += sizeof(serv1st);
+        cmdCount = ProcessBuffer(packet.Buf, packet.Size);
         ASSERT_TRUE(packet.Size == packetSize);
+        ASSERT_TRUE(cmdCount == 4);
         printBuffer(packet.Buf, packet.Size);
+
         packet.AppendBuffer(serv2nd, sizeof(serv2nd));
         packetSize += sizeof(serv2nd);
+        cmdCount = ProcessBuffer(packet.Buf, packet.Size);
         ASSERT_TRUE(packet.Size == packetSize);
+        ASSERT_TRUE(cmdCount == 17);
         printBuffer(packet.Buf, packet.Size);
+
         packet.AppendCommand(TlntCmd_DO, TlntOpt_ExtendedASCII);
         packetSize += 3;
+        cmdCount = ProcessBuffer(packet.Buf, packet.Size);
         ASSERT_TRUE(packet.Size == packetSize);
+        ASSERT_TRUE(cmdCount == 17);
         printBuffer(packet.Buf, packet.Size);
+
         cout << "Hello world!" << endl;
         return ret;
 }
