@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <AssertMacros.h>
 #include <TelnetProtocol.h>
 
 using namespace std;
@@ -43,13 +44,20 @@ void printBuffer(void *buf, size_t count)
 int main(int argc, char **argv)
 {
         int ret = 0;
+        size_t packetSize = 0;
         TelnetPacket packet;
         TelnetPacket packetS1(serv1st, sizeof(serv1st));
         packet.AppendPacket(packetS1);
+        packetSize += sizeof(serv1st);
+        ASSERT_TRUE(packet.Size == packetSize);
         printBuffer(packet.Buf, packet.Size);
         packet.AppendBuffer(serv2nd, sizeof(serv2nd));
+        packetSize += sizeof(serv2nd);
+        ASSERT_TRUE(packet.Size == packetSize);
         printBuffer(packet.Buf, packet.Size);
         packet.AppendCommand(TlntCmd_DO, TlntOpt_ExtendedASCII);
+        packetSize += 3;
+        ASSERT_TRUE(packet.Size == packetSize);
         printBuffer(packet.Buf, packet.Size);
         cout << "Hello world!" << endl;
         return ret;
