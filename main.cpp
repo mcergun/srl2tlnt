@@ -45,35 +45,29 @@ void printBuffer(void *buf, size_t count)
 size_t ProcessBuffer(void *buf, size_t count)
 {
         unsigned char *cbuf = reinterpret_cast<unsigned char *>(buf);
-        size_t cmdCount = 0;
+        size_t cmdCount = 1;
+        size_t startingIdx = 0;
         bool isCommand = false;
-        for (size_t idx = 0; idx < count; idx++)
+
+        if (ToTelnetCommand(cbuf[0]) == TlntCmd_IAC)
         {
-                // iac iac      -> no cmd, keep searching for iac
-                // iac so       -> so cmd, keep searching for iac
-                // iac so end   -> so end cmd, length is 2, keep searching for iac
-                // iac sth cmd  -> length is 3, keep searching for iac
-                TelnetCommands cmd = ToTelnetCommand(cbuf[idx]);
-                if (isCommand)
+                isCommand = true;
+        }
+
+        for (size_t i = 1; i < count; ++i)
+        {
+                if (ToTelnetCommand(cbuf[i]) == TlntCmd_IAC)
                 {
-                        if (cmd == TlntCmd_IAC)
+                        if (ToTelnetCommand(cbuf[i + 1]) != TlntCmd_IAC)
                         {
-                                isCommand = false;
+                                // another command starts here
+                                printBuffer(cbuf + startingIdx, i - startingIdx);
+                                startingIdx = i;
                                 cmdCount++;
-                                idx--;
-                        }
-                }
-                else
-                {
-                        if (cmd == TlntCmd_IAC)
-                        {
-                                // Might be a command
-                                if (ToTelnetCommand(cbuf[idx + 1]) != TlntCmd_IAC)
-                                        isCommand = true;
                         }
                 }
         }
-        cmdCount = cmdCount ? cmdCount : 1;
+        printBuffer(cbuf + startingIdx, count - startingIdx);
         return cmdCount;
 }
 
@@ -102,7 +96,7 @@ int main(int argc, char **argv)
         packetSize += 3;
         cmdCount = ProcessBuffer(packet.Buf, packet.Size);
         ASSERT_TRUE(packet.Size == packetSize);
-        ASSERT_TRUE(cmdCount == 17);
+        ASSERT_TRUE(cmdCount == 18);
         printBuffer(packet.Buf, packet.Size);
 
         cout << "Hello world!" << endl;

@@ -10,12 +10,34 @@ _There are a lot of serial to telnet converters also. But using them defeats the
 
 ## Road Plan
 
-> 19.08.2018 \
-> My current plan is to get a cross platform serial library and employ it directly. \
+> 19.08.2018  
+> My current plan is to get a cross platform serial library and employ it directly.  
 > For telnet, however, I would like to implement the platform by myself as there is a logic behind the curtains.
 
-> 21.08.2018 \
-> Captured message interaction from telnetd server and ubuntu telnet client. This will serve as a good benchmark.
+> 21.08.2018  
+> Captured message interaction from telnetd server and ubuntu telnet client.  
+> This will serve as a good benchmark.
+
+> 29.08.2018  
+> `ProcessBuffer` function implements following pseudo code:  
+> ```c++
+> if (buf[0] == IAC)
+> {
+>         isCommand = true;
+> }
+> for (i = 1; i < count; ++i)
+> {
+>         if (buf[i] == IAC)
+>         {
+>                 if (buf[i + 1] != IAC)
+>                 {
+>                         HandleCommand(startingIdx, i, isCommand)
+>                         startingIdx = i + 1
+>                 }
+>         }
+> }
+> HandleCommand(startingIdx, count, isCommand)
+> ```
 
 ## Telnet
 
